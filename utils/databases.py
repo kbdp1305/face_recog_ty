@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 from pymongo import MongoClient
+import psycopg2
 
 class FaceEmbeddingDB:
     """Class to handle storing and retrieving face embeddings in MongoDB."""
@@ -113,3 +114,61 @@ class FaceEmbeddingDB:
     def close(self):
         """Close MongoDB connection."""
         self.client.close()
+
+
+class InspectionDB:
+    def __init__(self, db_params):
+        """Initialize connection and create table if not exists."""
+        self.conn = psycopg2.connect(**db_params)
+        self.curr = self.conn.cursor()
+        self.create_table()
+
+    def create_table(self):
+        """Create inspections table if it does not exist."""
+        query = """
+        CREATE TABLE IF NOT EXISTS inspections (
+            id SERIAL PRIMARY KEY,
+            pos VARCHAR(10),
+            insp_job VARCHAR(255),
+            insp_sub_job VARCHAR(255),
+            iDefect TEXT,
+            sDefect TEXT,
+            category VARCHAR(255),
+            defect_name VARCHAR(255),
+            inspector VARCHAR(255),
+            shift VARCHAR(50),
+            date TIMESTAMP
+        );
+        """
+        self.curr.execute(query)
+        self.conn.commit()
+
+    def add_stamp(self, name, date_rn):
+        """Insert a new inspection record into the database."""
+        pos = "1F101"
+        insp_job = "Interior FRLH"
+        insp_subjob = "Cabin Fr"
+        iDefect = ""
+        sDefect = ""
+        category = ""
+        defect_name = ""
+        inspector = name
+        shift = "WHITE"
+        dates = date_rn
+
+        # SQL Query
+        query = """
+        INSERT INTO "TB_R_DEFECT" 
+        (pos, insp_job, insp_sub_job, iDefect, sDefect, category, defect_name, inspector, shift, date) 
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
+        """
+        values = (pos, insp_job, insp_subjob, iDefect, sDefect, category, defect_name, inspector, shift, dates)
+
+        # Execute Query
+        self.curr.execute(query, values)
+        self.conn.commit()  # Save changes
+
+    def close_connection(self):
+        """Close database connection."""
+        self.curr.close()
+        self.conn.close()

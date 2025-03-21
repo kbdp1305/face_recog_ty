@@ -14,8 +14,6 @@ from PIL import Image, ImageTk
 from datetime import datetime
 import cv2
 import time
-import sys  # Import sys to exit the program
-
 
 db_uri = "mongodb+srv://dharmaworkdev:dharma123@facerecognitiontrial.jxq2i.mongodb.net/?retryWrites=true&w=majority&appName=FaceRecognitionTrial"
 db_name, collection_name = 'trial_acces_plany', 'mydatabase'
@@ -28,25 +26,19 @@ db_params = {
 }
 
 face_db=InspectionDB(db_params)
+
+
+
 database = FaceEmbeddingDB(db_uri, db_name, collection_name)
-mtcnn = MTCNN(image_size=160, margin=10, min_face_size=15, 
-              thresholds=[0.6, 0.6, 0.6], factor=0.609, post_process=True)
+mtcnn = MTCNN(image_size=160, margin=0, min_face_size=20, 
+              thresholds=[0.6, 0.7, 0.7], factor=0.709, post_process=True)
 face_extractor = InceptionResnetV1(pretrained="vggface2").eval()
 face_recognizer = FaceRecog(mtcnn, face_extractor)
 
 
 
 def capture_face():
-    
-    cap = cv2.VideoCapture(0,cv2.CAP_DSHOW)
-    if not cap.isOpened():
-        print("Error: Could not open camera.")
-        return
-
-    print("Initializing camera, please wait...")
-    
-    # Give time for the camera to warm up
-    time.sleep(2)  
+    cap = cv2.VideoCapture(0)
     print("Align your face inside the box.")
 
     cv2.namedWindow("Capture Face", cv2.WND_PROP_FULLSCREEN)
@@ -94,6 +86,8 @@ def capture_face():
     cap.release()
     cv2.destroyAllWindows()
     return frame
+
+
 
 def recognize_face():
     pos = 1
@@ -181,87 +175,47 @@ def on_recognize(label):
         # face_db.close_connection()
 
 
-# def create_gui():
-#     root = tk.Tk()
-#     root.title("Face Recognition System")
-#     root.state("zoomed")  # Make GUI full screen
-    
-#     # Load background image
-#     bg_image = Image.open(r"C:\Magang\Toyota\face_recognition\dataset\qis.jpg")  # Ganti dengan path gambar yang sesuai
-#     bg_image = bg_image.resize((root.winfo_screenwidth(), root.winfo_screenheight()))
-#     bg_photo = ImageTk.PhotoImage(bg_image)
-    
-#     # Set background
-#     bg_label = tk.Label(root, image=bg_photo)
-#     bg_label.place(relwidth=1, relheight=1)
-#     # Load the button image
-#     button_image = Image.open(r"C:\Magang\Toyota\face_recognition\dataset\stamp.png")  # Replace with your image path
-#     button_image = button_image.resize((248, 42), Image.Resampling.LANCZOS)  # Resize if needed
-#     button_photo = ImageTk.PhotoImage(button_image)
-#     # Create Canvas for rectangle and date input
-#     # canvas = tk.Canvas(root, width=150, height=45, bg="white", highlightthickness=0)
-#         # Create Canvas (no background for transparency effect)
-#     # canvas = tk.Canvas(root, width=150, height=45, highlightthickness=0,bg=root["bg"])
-#     # # canvas.place(relx=0.75, rely=0.9, anchor=tk.CENTER)  # Adjust as needed
-#     # canvas.place(relx=0.9, rely=0.11, anchor=tk.CENTER)  # Adjust position as needed
-
-#     # Draw a rectangle
-#     # canvas.create_rectangle(5, 5, 295, 75, outline="black", width=2)
-#     # canvas.create_text(150, 20, text="Face Recognized Date:", font=("Arial", 14, "bold"))
-#     label = tk.Label(root, text="", font=("Arial", 16, "bold"), fg="black", bg='#FAFAFA')
-#     label.place(relx=0.92, rely=0.11, anchor=tk.CENTER)
-#     # global date_entry
-#     # date_entry = tk.Entry(root, font=("Arial", 14), justify="center", bd=0, highlightthickness=0)
-#     # canvas.create_window(75, 22, window=date_entry)  # Centered inside the Canvas
-#     # Create an image button
-#     btn = tk.Button(root, image=button_photo, borderwidth=0, command=lambda: on_recognize(label))
-
-#     # btn = tk.Button(root, image=button_photo, command=recognize_face, borderwidth=0)  # Remove border
-#     btn.place(relx=0.35, rely=0.982, anchor=tk.CENTER)  # Adjust position as needed
-#     # Button on top of background
-#     # btn = tk.Button(root, text="Recognize Face", command=recognize_face, font=("Arial", 24), height=1, width=10)
-#     # btn.place(relx=0.1, rely=0.1, anchor=tk.CENTER)
-    
-#     root.mainloop()
-    
-def on_close(root):
-    """Close the database connections and exit the application."""
-    face_db.close_connection()  # Close face_db connection
-    database.close()  # Close FaceEmbeddingDB connection
-    print("Database connections closed.")
-    root.destroy()  # Close the Tkinter window
-    sys.exit()  # Ensure the program exits completely
 def create_gui():
     root = tk.Tk()
     root.title("Face Recognition System")
     root.state("zoomed")  # Make GUI full screen
-
+    
     # Load background image
-    bg_image = Image.open(r"C:\Magang\Toyota\face_recognition\dataset\qis.jpg")  
+    bg_image = Image.open(r"C:\Magang\Toyota\face_recognition\dataset\qis.jpg")  # Ganti dengan path gambar yang sesuai
     bg_image = bg_image.resize((root.winfo_screenwidth(), root.winfo_screenheight()))
     bg_photo = ImageTk.PhotoImage(bg_image)
-
+    
     # Set background
     bg_label = tk.Label(root, image=bg_photo)
     bg_label.place(relwidth=1, relheight=1)
-
     # Load the button image
-    button_image = Image.open(r"C:\Magang\Toyota\face_recognition\dataset\stamp.png")  
-    button_image = button_image.resize((248, 42), Image.Resampling.LANCZOS)
+    button_image = Image.open(r"C:\Magang\Toyota\face_recognition\dataset\stamp.png")  # Replace with your image path
+    button_image = button_image.resize((248, 42), Image.Resampling.LANCZOS)  # Resize if needed
     button_photo = ImageTk.PhotoImage(button_image)
+    # Create Canvas for rectangle and date input
+    # canvas = tk.Canvas(root, width=150, height=45, bg="white", highlightthickness=0)
+        # Create Canvas (no background for transparency effect)
+    # canvas = tk.Canvas(root, width=150, height=45, highlightthickness=0,bg=root["bg"])
+    # # canvas.place(relx=0.75, rely=0.9, anchor=tk.CENTER)  # Adjust as needed
+    # canvas.place(relx=0.9, rely=0.11, anchor=tk.CENTER)  # Adjust position as needed
 
-    # Create the label for displaying the date
+    # Draw a rectangle
+    # canvas.create_rectangle(5, 5, 295, 75, outline="black", width=2)
+    # canvas.create_text(150, 20, text="Face Recognized Date:", font=("Arial", 14, "bold"))
     label = tk.Label(root, text="", font=("Arial", 16, "bold"), fg="black", bg='#FAFAFA')
     label.place(relx=0.92, rely=0.11, anchor=tk.CENTER)
-
-    # Create the button and place it on the screen
+    # global date_entry
+    # date_entry = tk.Entry(root, font=("Arial", 14), justify="center", bd=0, highlightthickness=0)
+    # canvas.create_window(75, 22, window=date_entry)  # Centered inside the Canvas
+    # Create an image button
     btn = tk.Button(root, image=button_photo, borderwidth=0, command=lambda: on_recognize(label))
-    btn.place(relx=0.35, rely=0.982, anchor=tk.CENTER)
 
-    # Set the close event to handle closing the databases
-    root.protocol("WM_DELETE_WINDOW", lambda: on_close(root))
-
+    # btn = tk.Button(root, image=button_photo, command=recognize_face, borderwidth=0)  # Remove border
+    btn.place(relx=0.35, rely=0.982, anchor=tk.CENTER)  # Adjust position as needed
+    # Button on top of background
+    # btn = tk.Button(root, text="Recognize Face", command=recognize_face, font=("Arial", 24), height=1, width=10)
+    # btn.place(relx=0.1, rely=0.1, anchor=tk.CENTER)
+    
     root.mainloop()
 
 create_gui()
-
